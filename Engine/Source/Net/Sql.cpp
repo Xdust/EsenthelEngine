@@ -1717,7 +1717,7 @@ static int SQLiteSync(sqlite3_file *pFile, int flags)
 static int SQLiteFileSize(sqlite3_file *pFile, sqlite_int64 *pSize)
 {
    SQLiteFile &f=*(SQLiteFile*)pFile;
-   *pSize=f.file.size();
+  *pSize=f.file.size();
    return SQLITE_OK;
 }
 static int SQLiteLock                 (sqlite3_file *pFile, int eLock) {return SQLITE_OK;}
