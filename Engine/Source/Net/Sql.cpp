@@ -1689,7 +1689,7 @@ static int SQLiteClose(sqlite3_file *pFile)
 static int SQLiteRead(sqlite3_file *pFile, void *zBuf, int iAmt, sqlite_int64 iOfst)
 {
    SQLiteFile &f=*(SQLiteFile*)pFile;
-   if(!f.file.pos(iOfst))return SQLITE_IOERR_SEEK; // TODO: this could trigger data loss if flush failed, however how to handle this error?
+   if(!f.file.pos(iOfst))return SQLITE_IOERR_SEEK; // this could trigger data loss if flush failed, no need to handle this specially as 'SQLiteSync' is called after each command (or 'flush' in buffered mode)
    Int read=f.file.getReturnSize(zBuf, iAmt);
    if( read>=iAmt              )return SQLITE_OK; // read all
    if( read<=0 && !f.file.end())return SQLITE_IOERR_READ; // read nothing but still have some left (not at the end)
@@ -1700,7 +1700,7 @@ static int SQLiteRead(sqlite3_file *pFile, void *zBuf, int iAmt, sqlite_int64 iO
 static int SQLiteWrite(sqlite3_file *pFile, const void *zBuf, int iAmt, sqlite_int64 iOfst)
 {
    SQLiteFile &f=*(SQLiteFile*)pFile;
-   if(!f.file.pos(iOfst))return SQLITE_IOERR_SEEK; // TODO: this could trigger data loss if flush failed, however how to handle this error?
+   if(!f.file.pos(iOfst))return SQLITE_IOERR_SEEK; // this could trigger data loss if flush failed, no need to handle this specially as 'SQLiteSync' is called after each command (or 'flush' in buffered mode)
    return f.file.put(zBuf, iAmt) ? SQLITE_OK : SQLITE_IOERR_WRITE;
 }
 static int SQLiteTruncate(sqlite3_file *pFile, sqlite_int64 size)
