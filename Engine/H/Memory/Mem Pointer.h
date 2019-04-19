@@ -152,12 +152,18 @@ template<typename TYPE, Int Memt_size> struct MemPtr // Memory Container Pointer
 
    MODE mode()C {return _mode;} // get type of container from which 'MemPtr' was created
 
-   Mems<TYPE           >* mems() {return (_mode==MEMS) ? _mems : null;}
-   Memc<TYPE           >* memc() {return (_mode==MEMC) ? _memc : null;}
-   Memt<TYPE, Memt_size>* memt() {return (_mode==MEMT) ? _memt : null;}
-   Memb<TYPE           >* memb() {return (_mode==MEMB) ? _memb : null;}
-   Memx<TYPE           >* memx() {return (_mode==MEMX) ? _memx : null;}
-   Meml<TYPE           >* meml() {return (_mode==MEML) ? _meml : null;}
+   Mems<TYPE           >* mems()  {return (_mode==MEMS) ? _mems : null;}
+ C Mems<TYPE           >* mems()C {return (_mode==MEMS) ? _mems : null;}
+   Memc<TYPE           >* memc()  {return (_mode==MEMC) ? _memc : null;}
+ C Memc<TYPE           >* memc()C {return (_mode==MEMC) ? _memc : null;}
+   Memt<TYPE, Memt_size>* memt()  {return (_mode==MEMT) ? _memt : null;}
+ C Memt<TYPE, Memt_size>* memt()C {return (_mode==MEMT) ? _memt : null;}
+   Memb<TYPE           >* memb()  {return (_mode==MEMB) ? _memb : null;}
+ C Memb<TYPE           >* memb()C {return (_mode==MEMB) ? _memb : null;}
+   Memx<TYPE           >* memx()  {return (_mode==MEMX) ? _memx : null;}
+ C Memx<TYPE           >* memx()C {return (_mode==MEMX) ? _memx : null;}
+   Meml<TYPE           >* meml()  {return (_mode==MEML) ? _meml : null;}
+ C Meml<TYPE           >* meml()C {return (_mode==MEML) ? _meml : null;}
 
 private:
    union
