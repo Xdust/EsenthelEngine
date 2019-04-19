@@ -177,12 +177,12 @@ void SetThreadName(C Str8 &name, UIntPtr thread_id)
       void SyncLock::off  ()C {          LeaveCriticalSection(&_lock);}
    #endif
 #else
-#define CUSTOM_RECURSIVE 0
+#define MUTEX_MANUAL_RECURSIVE 0
 Bool SyncLock::created()C {return _is!=0;}
 
 SyncLock::SyncLock()
 {
-#if CUSTOM_RECURSIVE
+#if MUTEX_MANUAL_RECURSIVE
    DYNAMIC_ASSERT(!pthread_mutex_init(&_lock, null), "pthread_mutex_init");
 #else
                    pthread_mutexattr_t                attr;
@@ -213,7 +213,7 @@ Bool SyncLock::tryOn()C
    if(created())
 #endif
    {
-   #if CUSTOM_RECURSIVE
+   #if MUTEX_MANUAL_RECURSIVE
       if(owned())
       {
         _lock_count++;
@@ -242,7 +242,7 @@ void SyncLock::on()C
    if(created())
 #endif
    {
-   #if CUSTOM_RECURSIVE
+   #if MUTEX_MANUAL_RECURSIVE
       if(!owned())
       {
          auto result=pthread_mutex_lock(&_lock); DEBUG_ASSERT(!result, "pthread_mutex_lock");
@@ -262,7 +262,7 @@ void SyncLock::off()C
    if(created())
 #endif
    {
-   #if CUSTOM_RECURSIVE
+   #if MUTEX_MANUAL_RECURSIVE
          _lock_count--;
       if(_lock_count<=0)
       {

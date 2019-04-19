@@ -59,7 +59,7 @@ SQL& SQL::del()
    if(_env      ){                      SQLFreeHandle(SQL_HANDLE_ENV , _env      ); _env      =null;}
 #endif
 #if SUPPORT_SQLITE
-   if(_sqlite   ){                      sqlite3_close(      (sqlite3*&)_sqlite   ); _sqlite   =null;}
+   if(_sqlite   ){                      sqlite3_close(       (sqlite3*)_sqlite   ); _sqlite   =null;}
 #endif
   _type=NONE;
   _rows  .del();
@@ -130,10 +130,10 @@ Bool SQL::connectSQLite(C Str &database_file_name, const_mem_addr Cipher *cipher
    {
       SyncLocker lock(SQLiteCipherLock);
       SQLiteCipher=cipher;
-      if(sqlite3_open_v2(UTF8(database_file_name), &(sqlite3*&)_sqlite, from_pak ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE, SQLITE_VFS_NAME)==SQLITE_OK){_type=SQLITE; return true;} // encode to UTF8 and later decode from it, because SQLite callbacks operate on char
+      if(sqlite3_open_v2(UTF8(database_file_name), (sqlite3**)&_sqlite, from_pak ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE, SQLITE_VFS_NAME)==SQLITE_OK){_type=SQLITE; return true;} // encode to UTF8 and later decode from it, because SQLite callbacks operate on char
    }else
    {
-      if(sqlite3_open16(PLATFORM(database_file_name, UnixPath(database_file_name))(), &(sqlite3*&)_sqlite)==SQLITE_OK){_type=SQLITE; return true;}
+      if(sqlite3_open16(PLATFORM(database_file_name, UnixPath(database_file_name))(), (sqlite3**)&_sqlite)==SQLITE_OK){_type=SQLITE; return true;}
    }
 #endif
    del(); return false;
@@ -163,62 +163,57 @@ Bool SQL::command(C Str &command, Str *messages, Int *error)
    #if SUPPORT_SQLITE
       case SQLITE:
       {
-         if(_sqlite)
+        _rows_pos=-1;
+        _rows.clear();
+        _cols.clear();
+         sqlite3_stmt *stmt=null;
+         Bool ok=(sqlite3_prepare16_v2((sqlite3*)_sqlite, command(), -1, &stmt, null)==SQLITE_OK);
+         if(ok && stmt)
          {
-            SQLiteMutexEnter((sqlite3*&)_sqlite);
-           _rows_pos=-1;
-           _rows.clear();
-           _cols.clear();
-            sqlite3_stmt *stmt=null;
-            Bool ok=(sqlite3_prepare16_v2((sqlite3*&)_sqlite, command(), -1, &stmt, null)==SQLITE_OK);
-            if(ok && stmt)
+           _cols.setNum(sqlite3_column_count(stmt));
+            FREPA(_cols)
             {
-              _cols.setNum(sqlite3_column_count(stmt));
+               Col &col=_cols[i];
+               col.name=(CChar*)sqlite3_column_name16(stmt, i);
+               col.type=SDT_UNKNOWN;
+            }
+            for(; sqlite3_step(stmt)==SQLITE_ROW; )
+            {
+               Row &row=_rows.New(); row.cols.setNum(_cols.elms());
                FREPA(_cols)
                {
-                  Col &col=_cols[i];
-                  col.name=(CChar*)sqlite3_column_name16(stmt, i);
-                  col.type=SDT_UNKNOWN;
-               }
-               for(; sqlite3_step(stmt)==SQLITE_ROW; )
-               {
-                  Row &row=_rows.New(); row.cols.setNum(_cols.elms());
-                  FREPA(_cols)
+                  Col      & col=   _cols[i];
+                  Row::Col &rcol=row.cols[i];
+                  switch(sqlite3_column_type(stmt, i))
                   {
-                     Col      & col=   _cols[i];
-                     Row::Col &rcol=row.cols[i];
-                     switch(sqlite3_column_type(stmt, i))
+                     case SQLITE_INTEGER: rcol.type=SDT_LONG   ; break;
+                     case SQLITE_FLOAT  : rcol.type=SDT_DBL    ; break;
+                     case SQLITE_TEXT   : rcol.type=SDT_STR    ; break;
+                     case SQLITE_BLOB   : rcol.type=SDT_BINARY ; break;
+                     default            : rcol.type=SDT_UNKNOWN; break;
+                  }
+                  if(col.type==SDT_UNKNOWN)col.type=rcol.type;
+                  switch(rcol.type)
+                  {
+                     case SDT_LONG  : rcol.i=        sqlite3_column_int64 (stmt, i); break;
+                     case SDT_DBL   : rcol.d=        sqlite3_column_double(stmt, i); break;
+                     case SDT_STR   : rcol.s=(CChar*)sqlite3_column_text16(stmt, i); break;
+                     case SDT_BINARY:
                      {
-                        case SQLITE_INTEGER: rcol.type=SDT_LONG   ; break;
-                        case SQLITE_FLOAT  : rcol.type=SDT_DBL    ; break;
-                        case SQLITE_TEXT   : rcol.type=SDT_STR    ; break;
-                        case SQLITE_BLOB   : rcol.type=SDT_BINARY ; break;
-                        default            : rcol.type=SDT_UNKNOWN; break;
-                     }
-                     if(col.type==SDT_UNKNOWN)col.type=rcol.type;
-                     switch(rcol.type)
-                     {
-                        case SDT_LONG  : rcol.i=        sqlite3_column_int64 (stmt, i); break;
-                        case SDT_DBL   : rcol.d=        sqlite3_column_double(stmt, i); break;
-                        case SDT_STR   : rcol.s=(CChar*)sqlite3_column_text16(stmt, i); break;
-                        case SDT_BINARY:
-                        {
-                           const Byte *src=(const Byte*)sqlite3_column_blob (stmt, i); // 'sqlite3_column_blob' must be called before 'sqlite3_column_bytes'
-                           rcol.b.setNum(               sqlite3_column_bytes(stmt, i)); rcol.b.copyFrom(src);
-                        }break;
-                     }
+                        const Byte *src=(const Byte*)sqlite3_column_blob (stmt, i); // 'sqlite3_column_blob' must be called before 'sqlite3_column_bytes'
+                        rcol.b.setNum(               sqlite3_column_bytes(stmt, i)); rcol.b.copyFrom(src);
+                     }break;
                   }
                }
             }
-            if(stmt){ok&=(sqlite3_finalize(stmt)==SQLITE_OK); stmt=null;}
-            if(!ok)
-            {
-               if(messages)*messages=(CChar*)sqlite3_errmsg16((sqlite3*&)_sqlite);
-               if(error   )*error   =        sqlite3_errcode ((sqlite3*&)_sqlite);
-            }
-            SQLiteMutexLeave((sqlite3*&)_sqlite);
-            return ok;
          }
+         if(stmt){ok&=(sqlite3_finalize(stmt)==SQLITE_OK); stmt=null;}
+         if(!ok)
+         {
+            if(messages)*messages=(CChar*)sqlite3_errmsg16((sqlite3*)_sqlite);
+            if(error   )*error   =        sqlite3_errcode ((sqlite3*)_sqlite);
+         }
+         return ok;
       }break;
    #endif
    }
@@ -1793,6 +1788,7 @@ static struct SQLiteInitializer // thanks to this class, we don't need to call a
 
    SQLiteInitializer()
    {
+      sqlite3_config(SQLITE_CONFIG_MULTITHREAD); // 'sqlite3_config' must be called before 'sqlite3_initialize' !! SQLITE_CONFIG_MULTITHREAD will force SQLITE_OPEN_NOMUTEX for all DB connections which will improve performance, since 'EE.SQL' does not support multi-threading anyway (a single instance can't be used simultaneously from multiple threads)
       sqlite3_initialize();
       if(sqlite3_vfs *default_vfs=sqlite3_vfs_find(null))
       {
