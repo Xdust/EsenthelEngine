@@ -520,7 +520,7 @@ struct FBX
             }
          #endif
          }
-         REPA(duplicate_name)if(duplicate_name[i])materials[i].name+=S+'\\'+ee_mtrl_to_fbx_mtrl[i]->GetUniqueID(); // append the name with materials Unique ID
+         REPA(duplicate_name)if(duplicate_name[i])materials[i].name+=S+'\\'+(ULong)ee_mtrl_to_fbx_mtrl[i]->GetUniqueID(); // append the name with materials Unique ID
       }
    }
    void boneRemap(C MemPtrN<Byte, 256> &old_to_new)
