@@ -17,12 +17,12 @@
 #define T2(a, b   )   template<typename a, typename b            > // 2 types template
 #define T3(a, b, c)   template<typename a, typename b, typename c> // 3 types template
 #if EE_PRIVATE
-#define T4(a, b, c, d               ) template<typename a, typename b, typename c, typename d                                                            > // 4 types template
-#define T5(a, b, c, d, e            ) template<typename a, typename b, typename c, typename d, typename e                                                > // 5 types template
-#define T6(a, b, c, d, e, f         ) template<typename a, typename b, typename c, typename d, typename e, typename f                                    > // 6 types template
-#define T7(a, b, c, d, e, f, g      ) template<typename a, typename b, typename c, typename d, typename e, typename f, typename g                        > // 7 types template
-#define T8(a, b, c, d, e, f, g, h   ) template<typename a, typename b, typename c, typename d, typename e, typename f, typename g, typename h            > // 8 types template
-#define T9(a, b, c, d, e, f, g, h, i) template<typename a, typename b, typename c, typename d, typename e, typename f, typename g, typename h, typename i> // 9 types template
+#define T4(a, b, c, d               )   template<typename a, typename b, typename c, typename d                                                            > // 4 types template
+#define T5(a, b, c, d, e            )   template<typename a, typename b, typename c, typename d, typename e                                                > // 5 types template
+#define T6(a, b, c, d, e, f         )   template<typename a, typename b, typename c, typename d, typename e, typename f                                    > // 6 types template
+#define T7(a, b, c, d, e, f, g      )   template<typename a, typename b, typename c, typename d, typename e, typename f, typename g                        > // 7 types template
+#define T8(a, b, c, d, e, f, g, h   )   template<typename a, typename b, typename c, typename d, typename e, typename f, typename g, typename h            > // 8 types template
+#define T9(a, b, c, d, e, f, g, h, i)   template<typename a, typename b, typename c, typename d, typename e, typename f, typename g, typename h, typename i> // 9 types template
 #endif
 /******************************************************************************/
 // HELPER MACROS

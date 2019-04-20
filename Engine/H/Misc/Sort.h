@@ -14,7 +14,6 @@ inline Int Compare(C Int    &a, C Int    &b) {if(a<b)return -1; if(a>b)return +1
 inline Int Compare(C UInt   &a, C UInt   &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 inline Int Compare(C Long   &a, C Long   &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 inline Int Compare(C ULong  &a, C ULong  &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
-inline Int Compare(C Half   &a, C Half   &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 inline Int Compare(C Flt    &a, C Flt    &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 inline Int Compare(C Dbl    &a, C Dbl    &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 inline Int Compare(C Ptr    &a, C Ptr    &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
@@ -22,11 +21,11 @@ inline Int Compare(C Ptr    &a, C Ptr    &b) {if(a<b)return -1; if(a>b)return +1
 T1(TYPE) ENABLE_IF_ENUM(TYPE, Int) Compare(C TYPE &a, C TYPE &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' enum values and return -1, 0, +1
 
 inline Int ComparePtr(CPtr a, CPtr b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
-
-inline Int CompareEps(C Flt &a, C Flt &b) {return SignEps(a-b);}
-
-inline Int Compare(C IndexWeight &a, C IndexWeight &b) {return Compare(b.weight, a.weight);} // compare in reversed order because we're sorting from most to least important
-
+/******************************************************************************/
+// have to forward declare 'Compare' functions for Clang compiler so functions using default parameters "Int compare(C TYPE &a, C VALUE &b)=Compare" can use them
+Int Compare(C Half &a, C Half &b);
+Int Compare(C UID  &a, C UID  &b);
+/******************************************************************************/
 // Sort Data
          void Sort(Int  *data, Int elms                                           ); // sort Int    array
          void Sort(Flt  *data, Int elms                                           ); // sort Flt    array

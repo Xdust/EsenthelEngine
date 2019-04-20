@@ -244,6 +244,7 @@ typedef struct Half
 #if EE_PRIVATE
 extern const Half HalfZero, HalfOne;
 #endif
+inline Int Compare(C Half &a, C Half &b) {if(a<b)return -1; if(a>b)return +1; return 0;} // compare 'a' 'b' values and return -1, 0, +1
 /******************************************************************************/
 // VECTORS
 /******************************************************************************/

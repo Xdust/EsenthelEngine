@@ -461,6 +461,8 @@ struct CyclicUInt
    CyclicUInt(      )        {}
    CyclicUInt(UInt v) : v(v) {}
 };
+Int Compare(C CyclicUShort &a, C CyclicUShort &b);
+Int Compare(C CyclicUInt   &a, C CyclicUInt   &b);
 /******************************************************************************/
 struct IndexWeight
 {
@@ -472,6 +474,7 @@ struct IndexWeight
    IndexWeight() {}
    IndexWeight(Int index, Flt weight) {set(index, weight);}
 };
+inline Int Compare(C IndexWeight &a, C IndexWeight &b) {return Compare(b.weight, a.weight);} // compare in reversed order because we're sorting from most to least important
 /******************************************************************************/
 struct TextPatch
 {
@@ -661,9 +664,6 @@ LANG_TYPE OSLanguage        (              ); // get Operating System Language
 LANG_TYPE   LanguageCode    (   C Str &lang); // get language      from language code
 CChar8*     LanguageCode    (LANG_TYPE lang); // get language code from language
 Str         LanguageSpecific(LANG_TYPE lang); // get specific alphabet characters for the selected language
-/******************************************************************************/
-Int Compare(C CyclicUShort &a, C CyclicUShort &b);
-Int Compare(C CyclicUInt   &a, C CyclicUInt   &b);
 /******************************************************************************/
 struct Notification
 {

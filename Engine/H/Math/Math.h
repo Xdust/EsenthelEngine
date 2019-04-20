@@ -139,6 +139,9 @@ inline    VecI4 Sign(C Vec4  &v) {return VecI4(Sign(v.x), Sign(v.y), Sign(v.z), 
 inline Int SignEps(Flt x, Flt eps=EPS ) {return (x>eps) ? 1 : (x<-eps) ? -1 : 0;} // sign using epsilon
 inline Int SignEps(Dbl x, Dbl eps=EPSD) {return (x>eps) ? 1 : (x<-eps) ? -1 : 0;} // sign using epsilon
 
+inline Int CompareEps(C Flt &a, C Flt &b) {return SignEps(a-b);}
+inline Int CompareEps(C Dbl &a, C Dbl &b) {return SignEps(a-b);}
+
 #if EE_PRIVATE
 inline Flt   PackInf(Flt x) {return 1-1/(x+1);} //   pack value from 0..Inf to 0..1
 inline Flt UnpackInf(Flt x) {return 1/(1-x)-1;} // unpack value from 0..1   to 0..Inf
