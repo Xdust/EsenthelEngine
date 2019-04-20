@@ -145,8 +145,8 @@ Ptr _Map::get        (CPtr key)
    if(_mode==MAP_ALL_NULL)return null;
 
    // new element
-   Int max_elms =_memx.maxElms(); Elm &elm=_memx.New(); Desc &desc=elmDesc(elm); Ptr data=elmData(elm), elm_key=elmKey(elm); desc.flag=0;
-   if( max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
+   auto max_elms =_memx.maxElms(); Elm &elm=_memx.New(); Desc &desc=elmDesc(elm); Ptr data=elmData(elm), elm_key=elmKey(elm); desc.flag=0;
+   if(  max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
 
    // always dummy
    if(_mode==MAP_ALL_DUMMY)
@@ -380,6 +380,18 @@ Bool _MapTS::replaceKey(CPtr src_key, CPtr dest_key)
    SyncUnlocker unlocker(D._lock); // must be used even though we're not using GPU
    SyncLocker     locker(  _lock);
    return super::replaceKey(src_key, dest_key);
+}
+/******************************************************************************/
+void _Map::reserve(Int num)
+{
+   auto max_elms =_memx.maxElms(); _memx.reserve(num);
+   if(  max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
+}
+void _MapTS::reserve(Int num)
+{
+   SyncUnlocker unlocker(D._lock); // must be used even though we're not using GPU
+   SyncLocker     locker(  _lock);
+   return super::reserve(num);
 }
 /******************************************************************************/
 static Int MapCompare(_Map::Elm *C&a, _Map::Elm *C&b, CPtr user)

@@ -46,6 +46,11 @@ void _Memx::clear()
   _invalid.clear();
 }
 /******************************************************************************/
+void _Memx::reserve(Int num)
+{
+  _abs  .reserve(num);
+  _valid.reserve(num);
+}
 Ptr _Memx::New()
 {
    UInt  i; if(_invalid.elms())i=_invalid.pop();else i=_abs.addNum(1);

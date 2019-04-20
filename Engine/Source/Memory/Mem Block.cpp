@@ -41,13 +41,11 @@ void _Memb::reset() // remove all elements and leave the first block if it exist
    }
 }
 /******************************************************************************/
-void _Memb::setNum(Int num)
+void _Memb::reserve(Int num)
 {
-   MAX(num, 0);
-   if (num>elms()) // add elements
+   if(num>0) // safety for Int/UInt mismatch below
    {
-      Int old_elms  = elms(); _elms=num;
-      Int new_blocks=(elms()+blockElms()-1)>>_shr;
+      Int new_blocks=(num+blockElms()-1)>>_shr;
       if( new_blocks>_blocks)
       {
          if(!elmSize())Exit("Attempting to create an object of zero size in 'Memb' container.\nThe container is not initialized or it is abstract and 'replaceClass' hasn't been called.");
@@ -55,6 +53,15 @@ void _Memb::setNum(Int num)
                         Realloc(_ptr, new_blocks, _blocks);
          REP(new_blocks-_blocks)_ptr[_blocks++]=Alloc(blockSize());
       }
+   }
+}
+void _Memb::setNum(Int num)
+{
+   MAX(num, 0);
+   if (num>elms()) // add elements
+   {
+      reserve(num);
+      Int old_elms=elms(); _elms=num;
       if(_new)for(Int i=old_elms; i<elms(); i++)_new(T[i]);
    }else
    if(num<elms()) // remove elements
@@ -68,15 +75,8 @@ void _Memb::setNumZero(Int num)
    MAX(num, 0);
    if (num>elms()) // add elements
    {
-      Int old_elms  = elms(); _elms=num;
-      Int new_blocks=(elms()+blockElms()-1)>>_shr;
-      if( new_blocks>_blocks)
-      {
-         if(!elmSize())Exit("Attempting to create an object of zero size in 'Memb' container.\nThe container is not initialized or it is abstract and 'replaceClass' hasn't been called.");
-                                      new_blocks=CeilPow2(new_blocks);
-                        Realloc(_ptr, new_blocks, _blocks);
-         REP(new_blocks-_blocks)_ptr[_blocks++]=Alloc(blockSize());
-      }
+      reserve(num);
+      Int old_elms=elms(); _elms=num;
       for(Int i=old_elms; i<elms(); i++){Ptr elm=T[i]; Zero(elm, elmSize()); if(_new)_new(elm);}
    }else
    if(num<elms()) // remove elements

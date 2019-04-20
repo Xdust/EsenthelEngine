@@ -28,6 +28,7 @@ struct _Memb // Block Based Container Base - Do not use this class, use 'Memb' i
    void setNum    (Int num);
    void setNumZero(Int num);
    Int  addNum    (Int num);
+   void reserve   (Int num);
 
    void reverseOrder();
    void    swapOrder(Int i  , Int j);

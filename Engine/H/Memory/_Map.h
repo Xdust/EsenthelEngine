@@ -78,6 +78,8 @@ private:
    void removeData(CPtr data);
    Bool replaceKey(CPtr src, CPtr dest);
 
+   void reserve(Int num);
+
    void compare(Int compare(CPtr key_a, CPtr key_b));
 
    explicit _Map(Int block_elms, Int compare(CPtr key_a, CPtr key_b), Bool create(Ptr data, CPtr key, Ptr user), Ptr user, void (&copy_key)(Ptr dest, CPtr src));
@@ -120,6 +122,8 @@ private:
    void removeKey (CPtr key );
    void removeData(CPtr data);
    Bool replaceKey(CPtr src, CPtr dest);
+
+   void reserve(Int num);
 
    void compare(Int compare(CPtr key_a, CPtr key_b));
 

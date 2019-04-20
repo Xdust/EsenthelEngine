@@ -36,8 +36,9 @@ struct _Memx // Block Based Extended Container Base - Do not use this class, use
    void removeData (CPtr elm, Bool keep_order=false);
    void removeLast ();
 
-   void setNum(Int num);
-   Int  addNum(Int num);
+   void setNum (Int num);
+   Int  addNum (Int num);
+   void reserve(Int num);
 
    void reverseOrder();
    void    swapOrder(Int i  , Int j);

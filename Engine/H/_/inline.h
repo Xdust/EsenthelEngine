@@ -1642,6 +1642,9 @@ T2(KEY, DATA)  void  Map<KEY, DATA>::removeKey (C KEY  &key             ) {     
 T2(KEY, DATA)  void  Map<KEY, DATA>::removeData(C DATA *data            ) {       _Map::removeData( data);}
 T2(KEY, DATA)  Bool  Map<KEY, DATA>::replaceKey(C KEY  &src, C KEY &dest) {return _Map::replaceKey(&src, &dest);}
 
+T2(KEY, DATA)  void            Map<KEY, DATA>::reserve(Int num) {_Map  ::reserve(num);}
+T2(KEY, DATA)  void  ThreadSafeMap<KEY, DATA>::reserve(Int num) {_MapTS::reserve(num);}
+
 T2(KEY, DATA)  void            Map<KEY, DATA>::compare(Int compare(C KEY &a, C KEY &b)) {_Map  ::compare((Int(*)(CPtr, CPtr))compare);}
 T2(KEY, DATA)  void  ThreadSafeMap<KEY, DATA>::compare(Int compare(C KEY &a, C KEY &b)) {_MapTS::compare((Int(*)(CPtr, CPtr))compare);}
 

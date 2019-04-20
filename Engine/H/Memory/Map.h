@@ -71,6 +71,8 @@ T2(KEY, DATA) struct Map : _Map // Map - container for dynamically created eleme
    void removeData(C DATA *data); // remove      element from container
    Bool replaceKey(C KEY  &src, C KEY &dest); // replace existing element 'src' key with 'dest', false on fail
 
+   void reserve(Int num); // pre-allocate memory for storage of 'num' total elements
+
    void compare(Int compare(C KEY &a, C KEY &b)); // change 'compare' function, changing this function will result in all elements being re-sorted
 
    T1(EXTENDED) Map& replaceClass(); // replace the type of class stored in the container, all elements are automatically removed before changing the type of the class, the new type must be extended from the base 'DATA' (if you're receiving a compilation error pointing to this method this means that the new class isn't extended from the base class)
@@ -123,6 +125,8 @@ T2(KEY, DATA) struct ThreadSafeMap : _MapTS // Thread Safe Map
    void removeKey (C KEY  &key ); // remove      element from container
    void removeData(C DATA *data); // remove      element from container
    Bool replaceKey(C KEY  &src, C KEY &dest); // replace existing element 'src' key with 'dest', false on fail
+
+   void reserve(Int num); // pre-allocate memory for storage of 'num' total elements
 
    void compare(Int compare(C KEY &a, C KEY &b)); // change 'compare' function, changing this function will result in all elements being re-sorted
 
