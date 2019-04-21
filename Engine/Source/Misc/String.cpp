@@ -3631,9 +3631,14 @@ static Int (&GetCompare(Bool case_sensitive, Bool paths)) (C Str &a, C Str &b)
 
 void StrLibrary::del()
 {
-   Free(_index);
-   Free(_data );
   _elms=_size=0;
+  _data=null;
+   Free(_index);
+}
+void StrLibrary::alloc()
+{
+  _index=(UInt*)Alloc(SIZE(*_index)*_elms + SIZE(*_data)*_size);
+  _data =(Byte*)(_index+_elms);
 }
 void StrLibrary::create(C MemPtr<Str> &strings, Bool case_sensitive, Bool paths)
 {
@@ -3665,9 +3670,8 @@ void StrLibrary::create(C MemPtr<Str> &strings, Bool case_sensitive, Bool paths)
       else                      _size+=SIZE(Char8)*(cleaned[i].length()+1);
    }
   _elms=cleaned.elms();
-   Alloc(_data , _size);
-   Alloc(_index, _elms);
-   Int data_pos=0;
+   alloc();
+   UInt data_pos=0;
    FREPA(cleaned) // go from start
    {
       if(HasUnicode(cleaned[i])){Set((Char *)(_data+data_pos), cleaned[i], cleaned[i].length()+1); _index[i]=data_pos^SIGN_BIT; data_pos+=SIZE(Char )*(cleaned[i].length()+1);}
@@ -3681,9 +3685,9 @@ Str StrLibrary::elm(Int i)C
 {
    if(InRange(i, elms()))
    {
-      i=_index[i];
-      if(i&SIGN_BIT)return (CChar *)(_data+(i^SIGN_BIT));
-                    return (CChar8*)(_data+ i          );
+      UInt offset=_index[i];
+      if(  offset&SIGN_BIT)return (CChar *)(_data+(offset^SIGN_BIT));
+                           return (CChar8*)(_data+ offset          );
    }
    return S;
 }
@@ -3694,9 +3698,9 @@ void StrLibrary::putStr(File &f, C Str &str)C
    Int l=0, r=_elms, found=-1; // -1 is 0xFFFFFFFF
    for(; l<r; )
    {
-      Int mid       =UInt(l+r)/2,
-          data_index=_index[mid],
-          c         =((data_index&SIGN_BIT) ? compare((CChar*)(_data+(data_index^SIGN_BIT)), str) : compare((CChar8*)(_data+data_index), str));
+      Int  mid   =UInt(l+r)/2;
+      UInt offset=_index[mid];
+      Int  c     =((offset&SIGN_BIT) ? compare((CChar*)(_data+(offset^SIGN_BIT)), str) : compare((CChar8*)(_data+offset), str));
       if( c<0)l=mid+1;else
       if( c>0)r=mid  ;else {found=mid; break;}
    }
@@ -3717,17 +3721,16 @@ void StrLibrary::getStr(File &f, Str &str)C
                       f.getFast(&index, 4);
    if(InRange(index, _elms))
    {
-      Int data_index=T._index[index];
-      if( data_index&SIGN_BIT)str=(CChar *)(_data+(data_index^SIGN_BIT));
-      else                    str=(CChar8*)(_data+ data_index          );
+      UInt offset=T._index[index];
+      if(  offset&SIGN_BIT)str=(CChar *)(_data+(offset^SIGN_BIT));
+      else                 str=(CChar8*)(_data+ offset          );
    }else f.getStr(str);
 }
 /******************************************************************************/
 Bool StrLibrary::save(File &f)C
 {
    f.putMulti(Byte(0), Byte((_case_sensitive ? 1 : 0)|(_paths ? 2 : 0)), _elms, _size); // version, flag
-   f.putN(_index, _elms);
-   f.putN(_data , _size);
+   f.put(_index, SIZE(*_index)*_elms + SIZE(*_data)*_size);
    return f.ok();
 }
 Bool StrLibrary::load(File &f)
@@ -3737,8 +3740,8 @@ Bool StrLibrary::load(File &f)
       case 0:
       {
          Byte flag; f.getMulti(flag, _elms, _size); _case_sensitive=FlagTest(flag, 1); _paths=FlagTest(flag, 2);
-         f.getFastN(Alloc(_index, _elms), _elms);
-         f.getFastN(Alloc(_data , _size), _size);
+         alloc();
+         f.getFast(_index, SIZE(*_index)*_elms + SIZE(*_data)*_size);
          if(f.ok())return true;
       }break;
    }

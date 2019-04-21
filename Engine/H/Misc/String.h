@@ -151,9 +151,12 @@ struct StrLibrary // String Library, efficient solution for storing multiple str
 
 private:
    Bool  _case_sensitive, _paths;
-   Int   _elms, _size, *_index;
+   Int   _elms, _size;
+   UInt *_index;
    Byte *_data;
-
+#if EE_PRIVATE
+   void alloc();
+#endif
    NO_COPY_CONSTRUCTOR(StrLibrary);
 };
 /******************************************************************************/

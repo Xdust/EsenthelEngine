@@ -126,6 +126,7 @@ void _Memx::setNum(Int num)
    MAX(num, 0);
    if (num>elms()) // add elements
    {
+      reserve(num);
       REP(num-elms())New();
    }else
    if(num<elms()) // remove elements

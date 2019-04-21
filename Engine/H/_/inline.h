@@ -1490,6 +1490,7 @@ T1(TYPE)  Cache<TYPE>&  Cache<TYPE>::delayRemove   (Flt   time     ) {          
 T1(TYPE)  Cache<TYPE>&  Cache<TYPE>::delayRemoveNow(               ) {                   _Cache::delayRemoveNow(         ); return T;}
 T1(TYPE)  Cache<TYPE>&  Cache<TYPE>::delayRemoveInc(               ) {                   _Cache::delayRemoveInc(         ); return T;}
 T1(TYPE)  Cache<TYPE>&  Cache<TYPE>::delayRemoveDec(               ) {                   _Cache::delayRemoveDec(         ); return T;}
+T1(TYPE)  Cache<TYPE>&  Cache<TYPE>::reserve       (Int   num      ) {                   _Cache::reserve       (num      ); return T;}
 
 T1(TYPE)  TYPE*  Cache<TYPE>::find      (C Str &file, CChar *path) {return (TYPE*)_Cache::_find   (file, path, false);}
 T1(TYPE)  TYPE*  Cache<TYPE>::find      (C UID &id  , CChar *path) {return (TYPE*)_Cache::_find   (id  , path, false);}

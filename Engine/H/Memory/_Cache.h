@@ -47,6 +47,7 @@ mutable Byte         _d_lock;
    void delayRemoveNow();
    void delayRemoveInc();
    void delayRemoveDec();
+   void reserve       (Int num);
    void update        ();
 
    void setLoadUser(Bool (*load_user)(Ptr data, C Str &file, Ptr user), Ptr user);

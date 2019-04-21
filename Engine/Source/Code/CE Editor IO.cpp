@@ -43,14 +43,14 @@ Bool CodeEditor::loadSymbols(C Str &file, Bool all)
        //sources .del(); don't delete sources because in the Editor we can preview sources before loading symbols
          items   .del();
 
-            REP(f.getUInt())items.New().load(f, sl);
+            items.setNum(f.getUInt()); FREPAO(items).load(f, sl);
          if(all)
          {
             Str temp;
-            REP(f.getUInt()){sl.getStr(f, temp); Symbols(temp);} // create all symbols up-front in sorted order so they are created quickly (this speeds up loading time), ignore counted references because they won't be unloaded anyway, load this before sources
-            REP(f.getUInt())sources .New().load(f, sl, temp);
-            REP(f.getUInt())EEUsings.New().require(sl.getStr(f));
-            REP(f.getUInt())EEMacros.New().load(f, sl, temp);
+            Int n=f.getUInt(); Symbols.reserve(n); REP(n){sl.getStr(f, temp); Symbols(temp);} // create all symbols up-front in sorted order so they are created quickly (this speeds up loading time), ignore counted references because they won't be unloaded anyway, load this before sources, reserve only "n" symbols and not "Symbols.elms()+n" because some of the loaded symbols could have already been allocated
+            Int i=sources.elms(); sources.addNum(f.getUInt()); for(; i<sources.elms(); i++)sources[i].load(f, sl, temp);
+            EEUsings.setNum(f.getUInt()); FREPAO(EEUsings).require(sl.getStr(f));
+            EEMacros.setNum(f.getUInt()); FREPAO(EEMacros).load(f, sl, temp);
          }
          Time.skipUpdate(); // this can take some time
          return f.ok();

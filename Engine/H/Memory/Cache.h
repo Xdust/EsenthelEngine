@@ -58,6 +58,7 @@ T1(TYPE) struct Cache : _Cache // Cache - container for dynamically loaded data,
    Cache&     delayRemoveNow(               ); // immediately remove all elements marked for delay removal at a later time to free as much memory as possible
    Cache&     delayRemoveInc(               ); // increase the cache "delay remove" counter thanks to which elements will not be immediately removed when they're no longer referenced, 'delayRemoveDec' should be called after this method
    Cache&     delayRemoveDec(               ); // decrease the cache "delay remove" counter thanks to which elements will not be immediately removed when they're no longer referenced, this should be called after 'delayRemoveInc', once the counter goes back to zero then all non referenced elements will be removed
+   Cache&     reserve       (Int   num      ); // pre-allocate memory for storage of 'num' total elements
 
    // get object and store it forever (as long as the Cache lives)
    TYPE* find      (C Str &file, CChar *path=null); // find    object by its file name   , don't load if not found, null on fail

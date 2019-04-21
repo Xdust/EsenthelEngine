@@ -76,6 +76,11 @@ void _Cache::delayRemove  (Flt  time                                            
       update();
    }
 }
+void _Cache::reserve(Int num)
+{
+   auto max_elms =_memx.maxElms(); _memx.reserve(num);
+   if(  max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
+}
 /******************************************************************************/
 void _Cache::lock()C
 {
@@ -211,8 +216,8 @@ Ptr _Cache::_get(CChar *file, CChar *path, Bool counted)
       if(_mode==CACHE_ALL_NULL)return null;
 
       // new element
-      Int max_elms =_memx.maxElms(); Elm &elm=_memx.New(); Desc &desc=elmDesc(elm); Ptr data=elmData(elm); desc.ptr_num=(counted ? 1 : 0); desc.flag=(counted ? 0 : CACHE_ELM_STD_PTR);
-      if( max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
+      auto max_elms =_memx.maxElms(); Elm &elm=_memx.New(); Desc &desc=elmDesc(elm); Ptr data=elmData(elm); desc.ptr_num=(counted ? 1 : 0); desc.flag=(counted ? 0 : CACHE_ELM_STD_PTR);
+      if(  max_elms!=_memx.maxElms())Realloc(_order, _memx.maxElms(), max_elms);
       file=_SkipStartPath(file, DataPath());
 
       // always dummy
