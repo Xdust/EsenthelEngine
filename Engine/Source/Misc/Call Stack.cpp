@@ -20,7 +20,10 @@ namespace StackWalker
       #define SWP_START
       #define SWP(x)
    #endif
+   #pragma warning(push)
+   #pragma warning(disable:4996) // 'GetVersion': was declared deprecated
    #include "../ThirdPartyLibs/StackWalker/StackWalker.cpp"
+   #pragma warning(pop)
    struct StackWalkerEx : StackWalker
    {
       Int  i;

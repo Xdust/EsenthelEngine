@@ -401,9 +401,6 @@ void InputDevicesClass::clear()
 /******************************************************************************/
 void InputDevicesClass::acquire(Bool on)
 {
-#if WINDOWS && !(_WIN32_WINNT>=_WIN32_WINNT_WIN10) // this is now deprecated
-   XInputEnable(on);
-#endif
          Kb      .acquire(on);
          Ms      .acquire(on);
    REPAO(Joypads).acquire(on);

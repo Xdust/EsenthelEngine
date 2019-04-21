@@ -19,6 +19,7 @@ class MiscRegion : Region
    static void Stop       (MiscRegion &mr);
    static void OpenIDE    (MiscRegion &mr);
 
+   // #VisualStudio
    static void ExportTXT          (MiscRegion &mr);
    static void ExportCPP          (MiscRegion &mr);
  /*static void ExportVS2008       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2008 );}
@@ -27,6 +28,7 @@ class MiscRegion : Region
    static void ExportVS2013       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2013 );}*/
    static void ExportVS2015       (MiscRegion &mr);
    static void ExportVS2017       (MiscRegion &mr);
+   static void ExportVS2019       (MiscRegion &mr);
    static void ExportAndroid      (MiscRegion &mr);
    static void ExportAndroidData  (MiscRegion &mr);
    static void ExportXcode        (MiscRegion &mr);

@@ -21,6 +21,7 @@ enum EXPORT_MODE : Byte // Export Mode
    EXPORT_VS            , // Export to Visual Studio version that is currently selected in the Editor
    EXPORT_VS2015        , // Export to Visual Studio 2015 project
    EXPORT_VS2017        , // Export to Visual Studio 2017 project
+   EXPORT_VS2019        , // Export to Visual Studio 2019 project
    EXPORT_ANDROID       , // Export to Android            project
    EXPORT_XCODE         , // Export to Xcode              project
    EXPORT_LINUX_MAKE    , // Export to Linux              project to be compiled using 'make'
@@ -222,7 +223,7 @@ struct CodeEditorInterface
 struct VisualStudioInstallation
 {
    Str   name, path;
-   VecI4 ver; // 9="VS 2008", 10="VS 2010", 11="VS 2012", 12="VS 2013", 14="VS 2015", 15="VS 2017", ..
+   VecI4 ver; // 9="VS 2008", 10="VS 2010", 11="VS 2012", 12="VS 2013", 14="VS 2015", 15="VS 2017", 16="VS 2019", ..
 };
 Bool CheckVisualStudio(C VecI4 &vs_ver, Str *message=null, Bool check_minor=true); // check if specified VS version is supported, 'message'=optional message, false on fail
 Bool GetVisualStudioInstallations(MemPtr<VisualStudioInstallation> installs); // false on fail

@@ -18,6 +18,7 @@ MiscRegion Misc;
    void MiscRegion::ExportCPP(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_CPP    );}
    void MiscRegion::ExportVS2015(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_VS2015 );}
    void MiscRegion::ExportVS2017(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_VS2017 );}
+   void MiscRegion::ExportVS2019(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_VS2019 );}
    void MiscRegion::ExportAndroid(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_ANDROID);}
    void MiscRegion::ExportAndroidData(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_ANDROID, true);}
    void MiscRegion::ExportXcode(MiscRegion &mr) {CodeEdit.Export(Edit::EXPORT_XCODE  );}
@@ -188,6 +189,7 @@ MiscRegion Misc;
          build_menu.New().create(  "Publish"                      , Publish      , T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD           )).desc("Use this option when you want to publish your application publicly.\nThis will create your application packaged with all needed data.\nApplication will always be compiled in release mode, even if debug is currently selected.");
          build_menu.New().create(S+"Save as *."+EsenthelProjectExt, PublishEsProj, T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD|KBSC_SHIFT)).desc(S+"Export your project into a single *."+EsenthelProjectExt+" file which can be easily imported by other users.");
          {
+            // #VisualStudio
             Node<MenuElm> &Export=(build_menu+="Export");
             Export.New().create("Text"                                            , ExportTXT          , T);
             Export.New().create("C++"                                             , ExportCPP          , T);
@@ -197,6 +199,7 @@ MiscRegion Misc;
             Export.New().create("C++ with Visual Studio 2013 project"             , ExportVS2013       , T);*/
             Export.New().create("C++ with Visual Studio 2015 project"             , ExportVS2015       , T);
             Export.New().create("C++ with Visual Studio 2017 project"             , ExportVS2017       , T);
+            Export.New().create("C++ with Visual Studio 2019 project"             , ExportVS2019       , T);
             Export.New().create("C++ with Android project"                        , ExportAndroid      , T);
             Export.New().create("C++ with Android project and Project data"       , ExportAndroidData  , T);
             Export.New().create("C++ with Xcode project"                          , ExportXcode        , T);

@@ -1382,7 +1382,7 @@ Bool CodeEditor::generateVSProj(Int version)
          return true;
       }
    }else*/
-   if(version==10 || version==11 || version==12 || version==14 || version==15) // #VisualStudio
+   if(version>=10 && version<=16) // #VisualStudio
    {
       XmlData xml, xml_f;
       if(!xml  .load(S+"Code/Windows/Project.vcxproj"        ))return ErrorRead(S+"Code/Windows/Project.vcxproj"        );
@@ -1423,11 +1423,11 @@ Bool CodeEditor::generateVSProj(Int version)
             prop->nodes.New().setName("ProjectName"  ).data.New()=build_project_name;
 
             // SDK #VisualStudio
-            CChar8 *sdk=null;
-            if(version==14)sdk="10.0.10240.0";else // VS 2015
-            if(version==15)sdk="10.0.17134.0";     // VS 2017
-            prop->getNode("WindowsTargetPlatformVersion"   ).data.clear().New()=sdk;
-            prop->getNode("WindowsTargetPlatformMinVersion").data.clear().New()=sdk;
+            CChar8 *sdk=null; // https://en.wikipedia.org/wiki/Microsoft_Windows_SDK
+            if(version==14)sdk="10.0.14393.795";else // latest SDK available for VS 2015
+            if(version==15)sdk="10.0.17763.0"  ;     // latest SDK available for VS 2017
+                                                     // VS 2019 does not require "WindowsTargetPlatformVersion" - when it's empty, then "latest SDK" is used, so don't specify it
+            if(sdk)prop->getNode("WindowsTargetPlatformVersion").data.setNum(1)[0]=sdk;
 
             break;
          }
@@ -1488,12 +1488,13 @@ Bool CodeEditor::generateVSProj(Int version)
                   type->data.setNum(1)[0]="DynamicLibrary"; // or "Application" or "StaticLibrary"
 
          // Platform toolset #VisualStudio
-         CChar8 *platform_toolset=null, *platform_toolset_universal=null;
-         if(version==10) platform_toolset="v100";else
-         if(version==11) platform_toolset=((Compare(devenv_version, VecI4(11, 0, 51106, 1))>=0) ? "v110_xp" : "v110");else // VS 2012 with XP support version number is "11.0.51106.1"
-         if(version==12) platform_toolset="v120_xp";else
-         if(version==14){platform_toolset="v140_xp"; platform_toolset_universal="v140";}else
-         if(version==15){platform_toolset="v141_xp"; platform_toolset_universal="v141";}
+         CChar8 *platform_toolset=null, *platform_toolset_xp=null;
+         if(version==10) platform_toolset=platform_toolset_xp="v100";else
+         if(version==11){platform_toolset="v110"; platform_toolset_xp="v110_xp";}else
+         if(version==12){platform_toolset="v120"; platform_toolset_xp="v120_xp";}else
+         if(version==14){platform_toolset="v140"; platform_toolset_xp="v140_xp";}else
+         if(version==15){platform_toolset="v141"; platform_toolset_xp="v141_xp";}else
+         if(version==16){platform_toolset="v142"; platform_toolset_xp="v141_xp";}     // VS 2019 uses v141_xp from VS 2017
 
          if(platform_toolset)
             for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
@@ -1503,9 +1504,9 @@ Bool CodeEditor::generateVSProj(Int version)
             Bool      keep     =(condition && Contains(condition->value, "Emscripten"));
             if(!keep) // keep default value
             {
-               Bool universal=(condition && Contains(condition->value, "Universal"));
+               Bool winXP=(condition && ContainsAll(condition->value, "DX9 Win32", false, true)); // only DX9 Win32 is for WinXP
                XmlNode &PlatformToolset=prop->getNode("PlatformToolset");
-               PlatformToolset.data.setNum(1)[0]=(universal ? platform_toolset_universal : platform_toolset);
+               PlatformToolset.data.setNum(1)[0]=(winXP ? platform_toolset_xp : platform_toolset);
             }
          }
 
@@ -2559,7 +2560,9 @@ Bool CodeEditor::Export(EXPORT_MODE mode, BUILD_MODE build_mode)
          if(devenv_version.x==11)mode=EXPORT_VS2012;else
          if(devenv_version.x==12)mode=EXPORT_VS2013;else*/
          if(devenv_version.x==14)mode=EXPORT_VS2015;else
-         if(devenv_version.x==15)mode=EXPORT_VS2017;else return false;
+         if(devenv_version.x==15)mode=EXPORT_VS2017;else
+         if(devenv_version.x==16)mode=EXPORT_VS2019;else
+            return false;
       }else
       if(mode==EXPORT_ANDROID       ){if(!verifyAndroid  ())return false;}else
       if(mode==EXPORT_XCODE         ){if(!verifyXcode    ())return false;}else
@@ -2582,6 +2585,7 @@ Bool CodeEditor::Export(EXPORT_MODE mode, BUILD_MODE build_mode)
             if(mode==EXPORT_VS2013        )return generateVSProj     (12);*/
             if(mode==EXPORT_VS2015        )return generateVSProj     (14);
             if(mode==EXPORT_VS2017        )return generateVSProj     (15);
+            if(mode==EXPORT_VS2019        )return generateVSProj     (16);
             if(mode==EXPORT_XCODE         )return generateXcodeProj    ();
             if(mode==EXPORT_ANDROID       )return generateAndroidProj  ();
             if(mode==EXPORT_LINUX_MAKE    )return generateLinuxMakeProj();

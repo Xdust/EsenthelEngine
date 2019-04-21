@@ -1144,16 +1144,21 @@ Str ClipGet(Bool fix_new_line)
    return s;
 }
 /******************************************************************************/
+#pragma warning(push)
+#pragma warning(disable:4996) // 'GetVersion': was declared deprecated
 VecI4 OSVerNumber()
 {
 #if WINDOWS_OLD
    #if 1 // faster
-      DWORD ver=GetVersion();
-      return VecI4(LOBYTE(LOWORD(ver)), HIBYTE(LOWORD(ver)), 0, 0);
+      auto ver  =GetVersion();
+      UInt major=LOBYTE(LOWORD(ver)),
+           minor=HIBYTE(LOWORD(ver)),
+           build=((ver<0x80000000) ? HIWORD(ver) : 0);
+      return VecI4(major, minor, build, 0);
    #else // slower
       OSVERSIONINFOEX v; Zero(v);
       v.dwOSVersionInfoSize=SIZE(v);
-      if(GetVersionEx((OSVERSIONINFO*)&v))return VecI4(v.dwMajorVersion, v.dwMinorVersion, 0, 0);
+      if(GetVersionEx((OSVERSIONINFO*)&v))return VecI4(v.dwMajorVersion, v.dwMinorVersion, v.dwBuildNumber, 0);
    #endif
 #elif WINDOWS_NEW
    if(auto ver_str=Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamilyVersion)
@@ -1254,6 +1259,7 @@ OS_VER OSVer()
 #endif
    return OS_UNKNOWN;
 }
+#pragma warning(pop)
 OS_VER OSGroup(OS_VER ver)
 {
    if(OSWindows(ver))return WINDOWS_UNKNOWN;

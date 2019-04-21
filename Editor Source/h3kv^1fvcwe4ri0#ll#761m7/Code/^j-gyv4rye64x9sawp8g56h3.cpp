@@ -426,9 +426,12 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=EE_GUI_SKIN; // set default G
             case Edit.EXPORT_ANDROID: exe=Edit.EXE_APK; break;
             case Edit.EXPORT_XCODE  : exe=Edit.EXE_IOS; break;
 
-            case Edit.EXPORT_VS     :
-            case Edit.EXPORT_VS2015 :
-            case Edit.EXPORT_VS2017 : exe=Edit.EXE_NEW; break;
+            // #VisualStudio
+            case Edit.EXPORT_VS    :
+            case Edit.EXPORT_VS2015:
+            case Edit.EXPORT_VS2017:
+            case Edit.EXPORT_VS2019:
+               exe=Edit.EXE_NEW; break;
          }
          if(exe>=0 && PublishDataNeeded(exe, Edit.BUILD_PUBLISH))StartPublish(S, exe, Edit.BUILD_PUBLISH, true);
       }

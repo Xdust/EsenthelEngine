@@ -18,6 +18,7 @@ class MiscRegion : Region
    static void Stop       (MiscRegion &mr) {CodeEdit.stop       ();}
    static void OpenIDE    (MiscRegion &mr) {CodeEdit.openIDE    ();}
 
+   // #VisualStudio
    static void ExportTXT          (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_TXT    );}
    static void ExportCPP          (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_CPP    );}
  /*static void ExportVS2008       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2008 );}
@@ -26,6 +27,7 @@ class MiscRegion : Region
    static void ExportVS2013       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2013 );}*/
    static void ExportVS2015       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2015 );}
    static void ExportVS2017       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2017 );}
+   static void ExportVS2019       (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_VS2019 );}
    static void ExportAndroid      (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_ANDROID);}
    static void ExportAndroidData  (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_ANDROID, true);}
    static void ExportXcode        (MiscRegion &mr) {CodeEdit.Export(Edit.EXPORT_XCODE  );}
@@ -201,6 +203,7 @@ class MiscRegion : Region
          build_menu.New().create(  "Publish"                      , Publish      , T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD           )).desc("Use this option when you want to publish your application publicly.\nThis will create your application packaged with all needed data.\nApplication will always be compiled in release mode, even if debug is currently selected.");
          build_menu.New().create(S+"Save as *."+EsenthelProjectExt, PublishEsProj, T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD|KBSC_SHIFT)).desc(S+"Export your project into a single *."+EsenthelProjectExt+" file which can be easily imported by other users.");
          {
+            // #VisualStudio
             Node<MenuElm> &Export=(build_menu+="Export");
             Export.New().create("Text"                                            , ExportTXT          , T);
             Export.New().create("C++"                                             , ExportCPP          , T);
@@ -210,6 +213,7 @@ class MiscRegion : Region
             Export.New().create("C++ with Visual Studio 2013 project"             , ExportVS2013       , T);*/
             Export.New().create("C++ with Visual Studio 2015 project"             , ExportVS2015       , T);
             Export.New().create("C++ with Visual Studio 2017 project"             , ExportVS2017       , T);
+            Export.New().create("C++ with Visual Studio 2019 project"             , ExportVS2019       , T);
             Export.New().create("C++ with Android project"                        , ExportAndroid      , T);
             Export.New().create("C++ with Android project and Project data"       , ExportAndroidData  , T);
             Export.New().create("C++ with Xcode project"                          , ExportXcode        , T);
