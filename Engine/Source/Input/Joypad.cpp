@@ -237,42 +237,45 @@ void Joypad::update()
    if(_xinput1)
    {
       XINPUT_STATE state;
-      if(XInputGetState(_xinput1-1, &state)==ERROR_SUCCESS)
+      if(App.active())
       {
-         // buttons
-         Byte x_button[]=
+         if(XInputGetState(_xinput1-1, &state)==ERROR_SUCCESS)
          {
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_Y                ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_SHOULDER    ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_SHOULDER   ),
-                     state.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD ,
-                     state.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD ,
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_THUMB       ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_THUMB      ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_START            ),
-            FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_BACK             ),
-         };
-         ASSERT(ELMS(x_button)<ELMS(T._button));
-         update(x_button, Elms(x_button));
+            // buttons
+            Byte x_button[]=
+            {
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_Y                ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_SHOULDER    ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_SHOULDER   ),
+                        state.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD ,
+                        state.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD ,
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_THUMB       ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_THUMB      ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_START            ),
+               FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_BACK             ),
+            };
+            ASSERT(ELMS(x_button)<ELMS(T._button));
+            update(x_button, Elms(x_button));
 
-         // digital pad
-         dir.x=FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT);
-         dir.y=FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN);
-         Flt l=dir.length(); if(l>1)dir/=l;
+            // digital pad
+            dir.x=FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT);
+            dir.y=FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN);
+            Flt l=dir.length(); if(l>1)dir/=l;
 
-         dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
-         dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
-         dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
-         dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
+            dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
+            dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
+            dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
+            dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
 
-         trigger[0]=state.Gamepad.bLeftTrigger /255.0f;
-         trigger[1]=state.Gamepad.bRightTrigger/255.0f;
-      }else zero();
+            trigger[0]=state.Gamepad.bLeftTrigger /255.0f;
+            trigger[1]=state.Gamepad.bRightTrigger/255.0f;
+         }else zero();
+      }
    }
-#if WINDOWS_OLD
+#if WINDOWS_OLD // DirectInput
    else
    if(_did->Poll())
    {
@@ -363,8 +366,11 @@ void Joypad::release(Byte b)
 /******************************************************************************/
 void Joypad::acquire(Bool on)
 {
+#if WINDOWS
+   if(_xinput1 && !on)zero(); // unacquire
 #if WINDOWS_OLD
    if(_did){if(on){_did->Acquire(); if(_effect)_effect->Start(1, 0);}else _did->Unacquire();}
+#endif
 #endif
 }
 /******************************************************************************/
