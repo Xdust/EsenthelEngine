@@ -94,6 +94,9 @@ Int CompareNumber    (CChar8 *a, CChar8 *b, Bool case_sensitive=false); // compa
 Int ComparePathNumber(CChar  *a, CChar  *b, Bool case_sensitive=false); // compare paths with correct number support, for example "value 2" and "value 10" will be sorted according to the number value (2 vs 10) and not the first different character ('2' vs '1'), returns -1, 0, +1 (this function works the same as 'CompareNumber', except that '/' is treated as equal to '\\')
 Int ComparePathNumber(CChar8 *a, CChar8 *b, Bool case_sensitive=false); // compare paths with correct number support, for example "value 2" and "value 10" will be sorted according to the number value (2 vs 10) and not the first different character ('2' vs '1'), returns -1, 0, +1 (this function works the same as 'CompareNumber', except that '/' is treated as equal to '\\')
 
+inline Int CompareNumberCI(C Str &a, C Str &b) {return CompareNumber(a, b, false);} // compare paths using 'CompareNumber' Case-Insensitive, you can use this function directly to other parts of the engine which require comparison functions in this format
+inline Int CompareNumberCS(C Str &a, C Str &b) {return CompareNumber(a, b, true );} // compare paths using 'CompareNumber' Case-  Sensitive, you can use this function directly to other parts of the engine which require comparison functions in this format
+
 inline Int ComparePathNumberCI(C Str &a, C Str &b) {return ComparePathNumber(a, b, false);} // compare paths using 'ComparePathNumber' Case-Insensitive, you can use this function directly to other parts of the engine which require comparison functions in this format
 inline Int ComparePathNumberCS(C Str &a, C Str &b) {return ComparePathNumber(a, b, true );} // compare paths using 'ComparePathNumber' Case-  Sensitive, you can use this function directly to other parts of the engine which require comparison functions in this format
 

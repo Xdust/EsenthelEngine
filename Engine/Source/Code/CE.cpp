@@ -2022,7 +2022,7 @@ Bool GetVisualStudioInstallations(MemPtr<VisualStudioInstallation> installs)
 #endif
    return ok;
 }
-Str MSBuildPath(C Str &vs_path, C VecI4 &vs_ver)
+static Str _MSBuildPath(C Str &vs_path, C VecI4 &vs_ver)
 {
    if(vs_path.is())
    {
@@ -2030,19 +2030,27 @@ Str MSBuildPath(C Str &vs_path, C VecI4 &vs_ver)
       if(vs_ver.x>0)
       {
          Str ms_build=ms_build_path+vs_ver.x+".0\\Bin\\MSBuild.exe";
-       //if(FExistSystem(ms_build))
-            return ms_build;
+         if(FExistSystem(ms_build))return ms_build;
       }
-      for(FileFind ff(ms_build_path); ff(); )if(ff.type==FSTD_DIR)
-      {
-         VecI4 ver=TextVecI4(ff.name); if(ver.x>0)return ms_build_path+ver.x+".0\\Bin\\MSBuild.exe";
-      }
+      Memt<Str> paths;
+      for(FileFind ff(ms_build_path); ff(); )if(ff.type==FSTD_DIR && FExistSystem(ff.pathName()+"\\Bin\\MSBuild.exe"))paths.binaryInclude(ff.name, CompareNumberCI); // use CompareNumber to make sure we have correct sorting by version number
+      if(paths.elms())return ms_build_path+paths.last()+"\\Bin\\MSBuild.exe"; // use the latest version available
+   }
+   return S;
+}
+Str MSBuildPath(C Str &vs_path, C VecI4 &vs_ver)
+{
+   if(vs_path.is())
+   {
+      Str ms_build_path=_MSBuildPath(vs_path, vs_ver);
+      if( ms_build_path.is())return ms_build_path;
    }
    Memc<VisualStudioInstallation> installs; if(GetVisualStudioInstallations(installs))REPA(installs) // go from the end to try the latest version first
    {
-      VisualStudioInstallation &install=installs[i]; if(CheckVisualStudio(install.ver))
+      VisualStudioInstallation &install=installs[i]; if(!EqualPath(vs_path, install.path) && CheckVisualStudio(install.ver))
       {
-         return install.path.tailSlash(true)+"MSBuild\\"+install.ver.x+".0\\Bin\\MSBuild.exe";
+         Str ms_build_path=_MSBuildPath(install.path, install.ver);
+         if( ms_build_path.is())return ms_build_path;
       }
    }
 #if 0 // VS 2015 and older
