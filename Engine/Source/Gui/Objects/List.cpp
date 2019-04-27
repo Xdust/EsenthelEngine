@@ -9,7 +9,6 @@ namespace EE{
 /******************************************************************************/
 #define MIN_COLUMN_WIDTH    0.030f
 #define COLUMN_RESIZE_WIDTH 0.015f
-#define COLUMN_WIDTH_PADD   0.01f
 /******************************************************************************/
 static _Memx& NodeChildren( Ptr   data, Int children_offset) {return *(_Memx*)(((Byte*)data)+children_offset);}
 static  Int   NodeElms    (_Memx &node, Int children_offset)
@@ -227,7 +226,7 @@ Flt _List::columnDataWidthEx(Int i)C
    {
     C ListColumn &lc=_columns[i];
       if(lc.visible()){Flt col_height=columnHeight(); MAX(w, lc.textWidth(&col_height));} // specify 'columnHeight' because 'ListColumn' height may not be set yet
-      w+=COLUMN_WIDTH_PADD*2;
+      w+=columnPadding()*2;
    }
    return w;
 }
@@ -767,8 +766,9 @@ TextStyle* _List::getTextStyle()C
    if(GuiSkin *skin=getSkin())return skin->list.text_style();
    return null;
 }
-Flt _List::columnHeight()C {return zoom()*columnHeightRel()+columnHeightBase();}
-Flt _List::textSize    ()C {return _height_ez*textSizeRel()+    textSizeBase();}
+Flt _List::columnHeight ()C {return zoom()*columnHeightRel()+columnHeightBase();}
+Flt _List::columnPadding()C {return zoom()*0.01f;}
+Flt _List::textSize     ()C {return _height_ez*textSizeRel()+    textSizeBase();}
 
 _List& _List::columnsHidden(  Bool  hidden                             ) {                                             if(T._columns_hidden!=hidden                                                   ){T._columns_hidden=hidden    ;                                                setRects();} return T;}
 _List& _List:: columnHeight(  Flt   base, Flt relative                 ) {MAX(base  , 0);            MAX(relative, 0); if(T. _column_base  !=base || T._column_rel!=relative                          ){T. _column_base  =base      ; T._column_rel=relative;                        setRects();} return T;}
@@ -1762,7 +1762,7 @@ void _List::draw(C GuiPC &gpc)
             if(skin)
                if(TextStyle *text_style=skin->list.text_style())
             {
-               Flt wae=COLUMN_WIDTH_PADD, wae_2=wae*0.5f;
+               Flt wae=columnPadding(), wae_2=wae*0.5f;
                TextStyleParams ts=*text_style; ts.align.set(1, 0); ts.size=textSize();
             #if DEFAULT_FONT_FROM_CUSTOM_SKIN
                if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
