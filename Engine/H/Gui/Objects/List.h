@@ -212,6 +212,7 @@ const_mem_addr STRUCT(_List , GuiObj) // Gui List !! must be stored in constant 
 
    // operations
   _List& scrollTo  (Int i     , Bool immediate=false, Flt center=0.0f); // scroll to i-th visible element, 'center'=how much (0..1) to center on the element (0=no centering, 0.5=half centering, 1=full centering)
+  _List& scrollY   (Flt delta , Bool immediate=false                 ); // vertical scroll by delta
   _List& sort      (Int column, Int  swap     =-1                    ); // sort according to 'column' column
   _List& setCur    (Int i                                            ); // set     cursor    to specified index, and if list has 'LIST_MULTI_SEL' enabled then set 'sel' accordingly
   _List& processSel(Int absolute, Int sel_mode=-1                    ); // process selection of specified 'absolute' element index, 'sel_mode'=selection mode (use -1 for 'selMode')
@@ -234,11 +235,13 @@ const_mem_addr STRUCT(_List , GuiObj) // Gui List !! must be stored in constant 
    Bool setSel           (Int visible);
    Int  localToVirtualX  (  Flt   local_x  )C; // this is a visible index without clamping to existing elements (-Inf..Inf)
    Int  localToVirtualY  (  Flt   local_y  )C; // this is a visible index without clamping to existing elements (-Inf..Inf)
+   Flt  localToVirtualYF (  Flt   local_y  )C; // this is a visible index without clamping to existing elements (-Inf..Inf)
    Int  localToVisX      (  Flt   local_x  )C; // this is a visible index with    clamping to existing elements (  -1..elms()-1) -1 on fail
    Int  localToVisY      (  Flt   local_y  )C; // this is a visible index with    clamping to existing elements (  -1..elms()-1) -1 on fail
    Int  localToVis       (C Vec2 &local_pos)C; // this is a visible index with    clamping to existing elements (  -1..elms()-1) -1 on fail
    Int  localToColumnX   (  Flt   local_x  )C; // -1 on fail
    Int screenToVirtualY  (Flt y, C GuiPC *gpc=null)C; // convert screen position Y to virtual index, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+   Flt screenToVirtualYF (Flt y, C GuiPC *gpc=null)C; // convert screen position Y to virtual index, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
    void sort             ();
    void removeChild      (  GuiObj &child);
    Vec2 childOffset      (C GuiObj &child)C;

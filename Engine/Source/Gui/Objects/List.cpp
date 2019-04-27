@@ -860,6 +860,23 @@ Int _List::localToVirtualY(Flt local_y)C
    }
    return -1;
 }
+Flt _List::localToVirtualYF(Flt local_y)C
+{
+   if(columnsVisible())local_y+=columnHeight();
+   switch(drawMode())
+   {
+      case LDM_LIST : return -local_y/_height_ez;
+      case LDM_RECTS: if(_rects && local_y<=0) // if "local_y>0" then we want -1, so just skip to the end
+      {
+         if(local_y<rect().min.y)return elms(); // out of range
+         Int i; if(!BinarySearch(_rects, elms(), local_y, i, CompareRectY))i--; // if didn't found an exact match, then we need to get the previous one, and not the next one, this will make 'i' always in range (-1..elms-1) inclusive
+       //if(InRange(i, T)) no need to check this, because we're checking below "InRange(i-1, T)" and in this case if i-1 is in range, then 'i' is in range too
+            for(; InRange(i-1, T) && Equal(_rects[i-1].max.y, _rects[i].max.y); i--); // if multiple elements have the same rect.max.y then get the first one
+         return i;
+      }break;
+   }
+   return -1;
+}
 Int _List::localToVis(C Vec2 &local_pos)C
 {
    if(drawMode()==LDM_RECTS)
@@ -887,11 +904,12 @@ Int _List::localToVis(C Vec2 &local_pos)C
 Int _List::localToVisX(Flt local_x)C {Int v=localToVirtualX(local_x); return InRange(v, visibleElms()) ? v : -1;}
 Int _List::localToVisY(Flt local_y)C {Int v=localToVirtualY(local_y); return InRange(v, visibleElms()) ? v : -1;}
 
-Int _List::screenToVisX    (  Flt   x  , C GuiPC *gpc)C {return localToVisX    (x  -(gpc ? gpc->offset.x : screenPos().x));}
-Int _List::screenToVisY    (  Flt   y  , C GuiPC *gpc)C {return localToVisY    (y  -(gpc ? gpc->offset.y : screenPos().y));}
-Int _List::screenToVis     (C Vec2 &pos, C GuiPC *gpc)C {return localToVis     (pos-(gpc ? gpc->offset   : screenPos()  ));}
-Int _List::screenToVirtualY(  Flt   y  , C GuiPC *gpc)C {return localToVirtualY(y  -(gpc ? gpc->offset.y : screenPos().y));}
-Int _List::screenToColumnX (  Flt   x  , C GuiPC *gpc)C {return localToColumnX (x  -(gpc ? gpc->offset.x : screenPos().x));}
+Int _List::screenToVisX     (  Flt   x  , C GuiPC *gpc)C {return localToVisX     (x  -(gpc ? gpc->offset.x : screenPos().x));}
+Int _List::screenToVisY     (  Flt   y  , C GuiPC *gpc)C {return localToVisY     (y  -(gpc ? gpc->offset.y : screenPos().y));}
+Int _List::screenToVis      (C Vec2 &pos, C GuiPC *gpc)C {return localToVis      (pos-(gpc ? gpc->offset   : screenPos()  ));}
+Int _List::screenToVirtualY (  Flt   y  , C GuiPC *gpc)C {return localToVirtualY (y  -(gpc ? gpc->offset.y : screenPos().y));}
+Flt _List::screenToVirtualYF(  Flt   y  , C GuiPC *gpc)C {return localToVirtualYF(y  -(gpc ? gpc->offset.y : screenPos().y));}
+Int _List::screenToColumnX  (  Flt   x  , C GuiPC *gpc)C {return localToColumnX  (x  -(gpc ? gpc->offset.x : screenPos().x));}
 
 Ptr _List::screenToData(  Flt   y  , C GuiPC *gpc)C {return visToData(screenToVisY(y  , gpc));}
 Ptr _List::screenToData(C Vec2 &pos, C GuiPC *gpc)C {return visToData(screenToVis (pos, gpc));}
@@ -990,7 +1008,7 @@ Int _List::pageElms(C GuiPC *gpc)C
 /******************************************************************************/
 _List& _List::scrollTo(Int i, Bool immediate, Flt center)
 {
-   Clamp(i, 0, elms());
+   Clamp(i, 0, elms()-1);
    if(InRange(i, T) && _parent && _parent->type()==GO_REGION)
    {
       Region &region=_parent->asRegion();
@@ -1013,6 +1031,11 @@ _List& _List::scrollTo(Int i, Bool immediate, Flt center)
          }break;
       }
    }
+   return T;
+}
+_List& _List::scrollY(Flt delta, Bool immediate)
+{
+   if(_parent && _parent->type()==GO_REGION)_parent->asRegion().scrollY(delta, immediate);
    return T;
 }
 /******************************************************************************/
@@ -1433,15 +1456,6 @@ void _List::update(C GuiPC &gpc)
    }else
    if(visible() && gpc.visible && visibleElms())
    {
-      if(Gui.wheel()==this)
-      {
-         if(Kb.ctrlCmd() && Ms.wheel() && (flag&LIST_SCALABLE))
-         {
-            zoom(zoom()*ScaleFactor(zoomStep()*Ms.wheel()));
-            Ms.eatWheel();
-         }
-      }
-
       Bool sel_changed=false;
       Int  cur_prev=cur;
 
@@ -1451,6 +1465,19 @@ void _List::update(C GuiPC &gpc)
       if(Gui.msLit()==this &&
            (Gui.ms()==this || Gui.dragging()) // allow highlight when mouse original focus is at the list or when dragging
       )lit=screenToVis(Ms.pos(), &gpc);
+
+      // zoom !! after mouse highlight !! because it affects zoom, offset but can't adjust 'gpc.offset' which results in incorrect 'lit'
+      if(Gui.wheel()==this)
+      {
+         if(Kb.ctrlCmd() && Ms.wheel() && (flag&LIST_SCALABLE))
+         {
+            Flt zoom, virt;
+            if(drawMode()==LDM_LIST){zoom=T.zoom(); virt=screenToVirtualYF(Ms.pos().y, &gpc);}
+            T.zoom(T.zoom()*ScaleFactor(zoomStep()*Ms.wheel()));
+            if(drawMode()==LDM_LIST && zoom!=T.zoom())scrollY((virt-screenToVirtualYF(Ms.pos().y, &gpc))*_height_ez, true);
+            Ms.eatWheel();
+         }
+      }
 
       // touch
       REPA(Touches)
