@@ -178,7 +178,7 @@ class ListElm
    {
       T.name  =name;
       T.depth =depth;
-      T.offset=(Proj.list.flat_is ? 0 : depth*Proj.list.textSizeActual()*0.6);
+      T.offset=(Proj.list.flat_is ? 0 : depth*Proj.list.textSize()*0.6);
       T.vis_parent_i=vis_parent;
 
       // icon

@@ -7,8 +7,9 @@ namespace EE{
       to allow changing cursor with the keyboard.
 
 /******************************************************************************/
-#define MIN_COLUMN_EDGE_WIDTH 0.030f
-#define COLUMN_RESIZE_WIDTH   0.015f
+#define MIN_COLUMN_WIDTH    0.030f
+#define COLUMN_RESIZE_WIDTH 0.015f
+#define COLUMN_WIDTH_PADD   0.01f
 /******************************************************************************/
 static _Memx& NodeChildren( Ptr   data, Int children_offset) {return *(_Memx*)(((Byte*)data)+children_offset);}
 static  Int   NodeElms    (_Memx &node, Int children_offset)
@@ -161,10 +162,10 @@ void ListColumn::update(C GuiPC &gpc)
          {
             if(Ms.bd(0)) // auto-size
             {
-               list->columnWidth(col, Max(MIN_COLUMN_EDGE_WIDTH, list->columnDataWidthEx(col)));
+               list->columnWidth(col, Max(MIN_COLUMN_WIDTH, list->columnDataWidthEx(col)));
             }else
             if(Flt d=Ms.dc().x)
-               list->columnWidth(col, Max(MIN_COLUMN_EDGE_WIDTH, list->columnWidth(col)+d));
+               list->columnWidth(col, Max(MIN_COLUMN_WIDTH, list->columnWidth(col)+d));
          }
       }else
       {
@@ -204,7 +205,7 @@ Flt _List::columnDataWidth(Int i, Bool visible)C
       if(GuiSkin *skin=getSkin())
          if(TextStyle *text_style=skin->list.text_style())
       {
-         TextStyleParams ts=*text_style; ts.size=textSizeActual();
+         TextStyleParams ts=*text_style; ts.size=textSize();
       #if DEFAULT_FONT_FROM_CUSTOM_SKIN
          if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
       #endif
@@ -225,8 +226,8 @@ Flt _List::columnDataWidthEx(Int i)C
    if(InRange(i, _columns))
    {
     C ListColumn &lc=_columns[i];
-      if(lc.visible())MAX(w, lc.textWidth(&_column_height)); // specify '_column_height' because 'ListColumn' height may not be set yet
-      w+=0.02f;
+      if(lc.visible()){Flt col_height=columnHeight(); MAX(w, lc.textWidth(&col_height));} // specify 'columnHeight' because 'ListColumn' height may not be set yet
+      w+=COLUMN_WIDTH_PADD*2;
    }
    return w;
 }
@@ -333,8 +334,6 @@ void _List::zero()
     sel_mode=LSM_SET;
    flag=LIST_SORTABLE|LIST_SEARCHABLE;
    image_alpha=ALPHA_BLEND;
-   zoom_min=Pow(1.2f, -3);
-   zoom_max=Pow(1.2f,  2);
    padding.zero();
 
   _total_elms  =0;
@@ -374,7 +373,8 @@ void _List::zero()
         _group_offset=-1;
      _children_offset= 0;
 
-  _column_height=0.055f;
+  _column_base  =0.055f;
+  _column_rel   =0;
      _elm_height=0.050f;
     _text_base  =0.050f;
     _text_rel   =0;
@@ -382,6 +382,9 @@ void _List::zero()
    _image_rel   =0.1f/64;
    _image_padd  .zero();
    _zoom        =1;
+   _zoom_step   =0.2f; Flt zoom_scale_factor=ScaleFactor(_zoom_step);
+    zoom_min    =Pow(zoom_scale_factor, -3);
+    zoom_max    =Pow(zoom_scale_factor,  2);
    _height_ez=_elm_height*_zoom;
 
   _cur_changed_user=_sel_changed_user=_sel_changing_user=null;
@@ -499,7 +502,8 @@ CopyFast(_search  ,src._search);
                _group_offset=src.      _group_offset;
             _children_offset=src.   _children_offset;
 
-         _column_height=src._column_height;
+         _column_base  =src._column_base;
+         _column_rel   =src._column_rel;
             _elm_height=src.   _elm_height;
            _text_base  =src.  _text_base;
            _text_rel   =src.  _text_rel;
@@ -653,13 +657,14 @@ void _List::init(Int elms, C MemPtr<Bool> &visible, Bool keep_cur)
 void _List::setRects()
 {
    Vec2 size=0;
+   Flt  col_height=columnHeight();
 
    // process columns
    FREPA(_columns) // set all columns so we can access their horizontal offsets properly
    {
       ListColumn &lc=_columns[i];
       Flt next=size.x; if(_columns[i].visible())next+=columnWidthActual(i);
-      lc.rect(Rect(size.x, -columnHeight(), next, 0));
+      lc.rect(Rect(size.x, -col_height, next, 0));
       size.x=next;
    }
 
@@ -728,7 +733,7 @@ void _List::setRects()
          if(_horizontal)y-=h;else x+=w;
       }
    }
-   if(columnsVisible())size.y+=columnHeight();
+   if(columnsVisible())size.y+=col_height;
    size+=padding;
 
    T.size(size);
@@ -762,16 +767,18 @@ TextStyle* _List::getTextStyle()C
    if(GuiSkin *skin=getSkin())return skin->list.text_style();
    return null;
 }
-Flt _List::textSizeActual()C {return _height_ez*textSizeRel()+textSizeBase();}
+Flt _List::columnHeight()C {return zoom()*columnHeightRel()+columnHeightBase();}
+Flt _List::textSize    ()C {return _height_ez*textSizeRel()+    textSizeBase();}
 
-_List& _List::columnsHidden(  Bool  hidden                             ) {                                             if(T._columns_hidden!=hidden                                              ){T._columns_hidden=hidden    ;                                               setRects();} return T;}
-_List& _List:: columnHeight(  Flt   height                             ) {MAX(height, 0);                              if(T. _column_height!=height                                              ){T. _column_height=height    ;                                               setRects();} return T;}
-_List& _List::    elmHeight(  Flt   height                             ) {MAX(height, 0);                              if(T.    _elm_height!=height                                              ){T.    _elm_height=height    ;   _height_ez=_elm_height*_zoom;               setRects();} return T;}
-_List& _List::     textSize(  Flt   base, Flt relative                 ) {MAX(base, 0);              MAX(relative, 0); if(T. _text_base!=base || T. _text_rel!=relative                          ){T.     _text_base=base      ; T. _text_rel=relative;                        setRects();} return T;}
-_List& _List::    imageSize(C Vec2 &base, Flt relative, C Rect &padding) {Vec2 b=Max(base, Vec2(0)); MAX(relative, 0); if(T._image_base!=base || T._image_rel!=relative || T._image_padd!=padding){T.    _image_base=base      ; T._image_rel=relative; T._image_padd=padding; setRects();} return T;}
-_List& _List::         zoom(  Flt   zoom                               ) {Clamp(zoom, zoom_min, zoom_max);             if(T._zoom!=zoom                                                          ){T.          _zoom=zoom      ;   _height_ez=_elm_height*_zoom;               setRects();} return T;}
-_List& _List::     drawMode(  LIST_DRAW_MODE mode                      ) {                                             if(T._draw_mode!=mode                                                     ){T.     _draw_mode=mode      ;                                               setRects();} return T;}
-_List& _List::   horizontal(  Bool           horizontal                ) {                                             if(T._horizontal!=horizontal                                              ){T.    _horizontal=horizontal;                                               setRects();} return T;}
+_List& _List::columnsHidden(  Bool  hidden                             ) {                                             if(T._columns_hidden!=hidden                                                   ){T._columns_hidden=hidden    ;                                                setRects();} return T;}
+_List& _List:: columnHeight(  Flt   base, Flt relative                 ) {MAX(base  , 0);            MAX(relative, 0); if(T. _column_base  !=base || T._column_rel!=relative                          ){T. _column_base  =base      ; T._column_rel=relative;                        setRects();} return T;}
+_List& _List::    elmHeight(  Flt   height                             ) {MAX(height, 0);                              if(T.    _elm_height!=height                                                   ){T.    _elm_height=height    ;   _height_ez =_elm_height*_zoom;               setRects();} return T;}
+_List& _List::     textSize(  Flt   base, Flt relative                 ) {MAX(base  , 0);            MAX(relative, 0); if(T.   _text_base  !=base || T.  _text_rel!=relative                          ){T.   _text_base  =base      ; T. _text_rel =relative;                        setRects();} return T;}
+_List& _List::    imageSize(C Vec2 &base, Flt relative, C Rect &padding) {Vec2 b=Max(base, Vec2(0)); MAX(relative, 0); if(T.  _image_base  !=base || T. _image_rel!=relative || T._image_padd!=padding){T.  _image_base  =base      ; T._image_rel =relative; T._image_padd=padding; setRects();} return T;}
+_List& _List::     zoom    (  Flt   zoom                               ) {Clamp(zoom, zoom_min, zoom_max);             if(T._zoom!=zoom                                                               ){T.        _zoom  =zoom      ;   _height_ez =_elm_height*_zoom;               setRects();} return T;}
+_List& _List::     zoomStep(  Flt   step                               ) {_zoom_step=step; return T;}
+_List& _List::     drawMode(  LIST_DRAW_MODE mode                      ) {                                             if(T._draw_mode!=mode                                                          ){T.     _draw_mode=mode      ;                                                setRects();} return T;}
+_List& _List::   horizontal(  Bool           horizontal                ) {                                             if(T._horizontal!=horizontal                                                   ){T.    _horizontal=horizontal;                                                setRects();} return T;}
 _List& _List::     vertical(  Bool           vertical                  ) {return horizontal(!vertical);}
 /******************************************************************************/
 Ptr _List::visToData(Int visible)C
@@ -1430,7 +1437,7 @@ void _List::update(C GuiPC &gpc)
       {
          if(Kb.ctrlCmd() && Ms.wheel() && (flag&LIST_SCALABLE))
          {
-            zoom(zoom()*ScaleFactor(0.2f*Ms.wheel()));
+            zoom(zoom()*ScaleFactor(zoomStep()*Ms.wheel()));
             Ms.eatWheel();
          }
       }
@@ -1595,8 +1602,9 @@ void _List::draw(C GuiPC &gpc)
       Rect _rect  =gpc.client_rect, elms_rect  =_rect  ;
       if(columnsVisible())
       {
-         elms_offset.    y-=columnHeight();
-         elms_rect  .max.y-=columnHeight();
+         Flt col_height=columnHeight();
+         elms_offset.    y-=col_height;
+         elms_rect  .max.y-=col_height;
       }
 
       // elements
@@ -1727,9 +1735,8 @@ void _List::draw(C GuiPC &gpc)
             if(skin)
                if(TextStyle *text_style=skin->list.text_style())
             {
-               Flt wae  =0.01f,
-                   wae_2=wae*0.5f;
-               TextStyleParams ts=*text_style; ts.align.set(1, 0); ts.size=textSizeActual();
+               Flt wae=COLUMN_WIDTH_PADD, wae_2=wae*0.5f;
+               TextStyleParams ts=*text_style; ts.align.set(1, 0); ts.size=textSize();
             #if DEFAULT_FONT_FROM_CUSTOM_SKIN
                if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
             #endif

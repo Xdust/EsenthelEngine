@@ -309,7 +309,7 @@ Menu& Menu::setData(C Node<MenuElm> &node)
         width_kbsc =0,
         width_kbsc2=0;
    GuiSkin   *skin      =list.getSkin();
-   TextStyle *text_style=(skin ? skin->list.text_style() : null); TextStyleParams ts(text_style, false); ts.size=list.textSizeActual();
+   TextStyle *text_style=(skin ? skin->list.text_style() : null); TextStyleParams ts(text_style, false); ts.size=list.textSize();
 #if DEFAULT_FONT_FROM_CUSTOM_SKIN
    if(!ts.font() && skin)ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
 #endif
