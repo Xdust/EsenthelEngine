@@ -1306,9 +1306,11 @@ void Keyboard::update()
   _shift=FlagTest(_button[KB_LSHIFT]|_button[KB_RSHIFT], BS_ON|BS_PUSHED);
   _alt  =FlagTest(_button[KB_LALT  ]|_button[KB_RALT  ], BS_ON|BS_PUSHED);
   _win  =FlagTest(_button[KB_LWIN  ]|_button[KB_RWIN  ], BS_ON|BS_PUSHED);
+  _text_input=false;
 #if ANDROID
    KeySource=KEY_ANY; // re-allow input from all modes
 #endif
+   nextInQueue(); // process queue before checking for keys below, so they can be eaten
    if(b(KB_LALT) && !ctrl() && !win())
    {
    #if !WEB
@@ -1316,9 +1318,6 @@ void Keyboard::update()
    #endif
       if( (App.flag&APP_FULL_TOGGLE) && bp(KB_ENTER)            ){D.toggle(shift()); eat(KB_ENTER);} // process  Alt+Enter to toggle full-screen
    }
-  _text_input=false;
-
-   nextInQueue();
 }
 /******************************************************************************/
 // EAT
